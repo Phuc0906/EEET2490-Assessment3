@@ -1,41 +1,61 @@
 #include "./uart/uart0.h"
 #include "./mailbox/mbox.h"
+#include "./display/framebf.h"
+
+void displayImg(int count) {
+    int x = 0;
+    int y = 0;
+
+    while (count < 1024 * 1024) {
+        if (count > 1024 * 1024 - 1) {
+            break;
+        }
+        drawPixelARGB32(y, x, pixels[count]);
+        count++;
+        y++;
+        if (y >= 1024) {
+            y = 1;
+            x++;
+        }
+    }
+}
 
 void main()
 {
     // intitialize UART
     uart_init();
+
     // say hello
 
     uart_puts("\n\nHello World!\n");
     // Initialize frame buffer
     framebf_init();
-    // Draw something on the screen
-    drawRectARGB32(100, 100, 400, 400, 0x00AA0000, 1); // RED
-    drawRectARGB32(150, 150, 400, 400, 0x0000BB00, 1); // GREEN
-    drawRectARGB32(200, 200, 400, 400, 0x000000CC, 1); // BLUE
-    drawRectARGB32(250, 250, 400, 400, 0x00FFFF00, 1); // YELLOW
-    drawPixelARGB32(500, 900, 0x00FF0000);             // RED
 
-    printImg();
-    // for (int i = 0; i < 200; i++) {
-    //     drawPixelARGB32(200 + i, 900, 0x00AA0000);
-    // }
+    // printImg();
 
-    // for (int y = 0; y <= 200; y++) {
-    //     for (int x = 0; x <= 200; x++)
-    //     {
-    //         drawPixelARGB32(500 + x, 500 + y, 0x00AA0000);
-    //     }
-    // }
-
+    // drawRectARGB32(0, 0, 400, 400, 0x00AA0000, 1);
     
+    int count = 0;
+    int lastCount = 0;
+    int moving = 0;
+    displayImg(count);
 
     while (1)
     {
         // read each char
         char c = uart_getc();
-        // send back
-        uart_sendc(c);
+        
+        if (c == 'w') {
+            moving += 5;
+            count = 1024 * moving;
+        }else if (c == 's') {
+            moving -= 5;
+            count = 1024 * moving;
+        }
+
+        if (count != lastCount) {
+            displayImg(count);
+            lastCount = count;
+        }
     }
 }
