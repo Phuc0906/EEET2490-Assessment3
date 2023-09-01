@@ -2,7 +2,7 @@
 #include "./mailbox/mbox.h"
 #include "./display/framebf.h"
 
-void displayImg(int count) {
+void displayImg(int count, int imgIdx) {
     int x = 0;
     int y = 0;
 
@@ -10,7 +10,7 @@ void displayImg(int count) {
         if (count > 1024 * 1024 - 1) {
             break;
         }
-        drawPixelARGB32(y, x, pixels[count]);
+        drawPixelARGB32(y, x, pixels[imgIdx][count]);
         count++;
         y++;
         if (y >= 1024) {
@@ -38,7 +38,9 @@ void main()
     int count = 0;
     int lastCount = 0;
     int moving = 0;
-    displayImg(count);
+    int imgIdx = 0;
+    int lastImgIdx = 0;
+    displayImg(count, imgIdx);
 
     while (1)
     {
@@ -51,10 +53,24 @@ void main()
         }else if (c == 's') {
             moving -= 5;
             count = 1024 * moving;
+        }else if (c == 'd') {
+            if (imgIdx < 2) {
+                imgIdx++;
+            }
+        }else if (c == 'a') {
+            if (imgIdx > 0) {
+                imgIdx--;
+            }
+        }
+
+        if (imgIdx != lastImgIdx) {
+            lastImgIdx = imgIdx;
+            count = 0;
+            displayImg(count, imgIdx);
         }
 
         if (count != lastCount) {
-            displayImg(count);
+            displayImg(count, imgIdx);
             lastCount = count;
         }
     }
